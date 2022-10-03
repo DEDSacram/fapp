@@ -156,6 +156,11 @@ class _MyPageState extends State<MyPage> {
   List<String> list = <String>['Caesar', 'Playfair'];
 
   String chosen = "";
+
+  int animationletter = 0;
+
+  int animationstep = -1;
+
   @override
   void initState() {
     _c = TextEditingController();
@@ -172,7 +177,7 @@ class _MyPageState extends State<MyPage> {
   String encrypt = '';
   String encrypted = '';
   String keyencrypt = '';
-  int encryptingletter = 0;
+
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
@@ -266,7 +271,7 @@ class _MyPageState extends State<MyPage> {
   // ignore: non_constant_identifier_names
   Widget Encrypting() => Text((() {
         if (encrypt.isNotEmpty) {
-          return "Šifruje se: ${encrypt[encryptingletter]}";
+          return "Šifruje se: ${encrypt[animationletter]}";
         }
         return "Chybí text k zašifrování";
       })());
@@ -331,26 +336,36 @@ class _MyPageState extends State<MyPage> {
 
   // ignore: non_constant_identifier_names
   Vpred() {
-    setState(() {
-      if (encryptingletter == 0) {
-        encryptingletter += 1;
-      } else {
-        if (encrypt.length - 1 > encryptingletter) {
-          encryptingletter += 1;
-        }
+    this.show = [];
+    if (anim[animationletter].length - 1 > animationstep) {
+      animationstep++;
+    } else {
+      if (animationletter < anim.length - 1) {
+        animationletter++;
+        animationstep = 0;
       }
+    }
+    print(animationletter);
+    setState(() {
+      animationletter = animationletter;
+      show.add(anim[animationletter][animationstep]);
     });
   }
 
   // ignore: non_constant_identifier_names
   Vzad() {
-    setState(() {
-      if (encryptingletter > 0) {
-        encryptingletter -= 1;
-      } else {
-        encryptingletter = 0;
+    this.show = [];
+    if (animationstep - 1 >= 0) {
+      animationstep--;
+    } else {
+      if (animationletter != 0) {
+        animationletter--;
+        animationstep = anim[animationletter].length - 1;
       }
-      if (anim.isNotEmpty) {}
+    }
+    setState(() {
+      animationletter = animationletter;
+      show.add(anim[animationletter][animationstep]);
     });
   }
 
@@ -360,16 +375,30 @@ class _MyPageState extends State<MyPage> {
   ShowCaesar() {
     wid = Alphabet();
     row = 26;
-    // anim.add(Letcircle(encryptingletter));
     int key = int.parse(keyencrypt);
     encrypt = encrypt.toUpperCase();
     String encryptedstring = '';
     for (int i = 0; i < encrypt.length; i++) {
+      List<Letcircle> steps = [];
       int charcode = encrypt.codeUnitAt(i);
       if (!(charcode > 64 && charcode < 91)) continue;
-
+      //animation
+      int condition1 = (charcode + key - 65) % 26;
+      int condition2 = (charcode - 65) % 26;
+      while (condition1 != condition2) {
+        steps.add(Letcircle(condition2));
+        if (condition2 == 26) {
+          condition2 = 0;
+        }
+        condition2++;
+      }
       int encryptedchar = (charcode + key - 65) % 26 + 65;
       encryptedstring += String.fromCharCode(encryptedchar);
+      if (condition1 == condition2) {
+        steps.add(Letcircle(condition2));
+      }
+      anim.add(steps);
+      print(anim);
     }
     setState(() {
       _c.text = encryptedstring;
@@ -378,6 +407,8 @@ class _MyPageState extends State<MyPage> {
 
   // ignore: non_constant_identifier_names
   Refresh() {
+    // ignore: unnecessary_this
+    this.anim = [];
     redraw = Object();
   }
 
