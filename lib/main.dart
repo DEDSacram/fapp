@@ -77,6 +77,12 @@ class MyPage extends StatefulWidget {
 }
 
 class FaceOutlinePainter extends CustomPainter {
+  late double x;
+  late double y;
+  FaceOutlinePainter(double x, double y) {
+    this.x = x;
+    this.y = y;
+  }
   @override
   void paint(Canvas canvas, Size size) {
     // Define a paint object
@@ -96,11 +102,19 @@ class FaceOutlinePainter extends CustomPainter {
     //   Rect.fromLTWH(size.width - 120, 40, 100, 100),
     //   paint,
     // );
+
+    // canvas.drawOval(
+    //   Rect.fromLTWH(
+    //       (size.width / 5 / 2) - 10, (size.height / 5 / 2) - 10, 20, 20),
+    //   paint,
+    // );
+
     canvas.drawOval(
-      Rect.fromLTWH(
-          (size.width / 5 / 2) - 10, (size.height / 5 / 2) - 10, 20, 20),
+      Rect.fromLTWH((size.width / 5 / 2) - 10 * x,
+          (size.height / 5 / 2) - 10 * y, 20, 20),
       paint,
     );
+
     // Mouth
     // final mouth = Path();
     // mouth.moveTo(size.width * 0.8, size.height * 0.6);
@@ -126,9 +140,9 @@ class _MyPageState extends State<MyPage> {
   var redraw = Object();
   late TextEditingController _c;
 
-  FaceOutlinePainter x = new FaceOutlinePainter();
-
   int row = 26;
+
+  FaceOutlinePainter x = FaceOutlinePainter(1, 1);
 
   List<Widget> wid = <Widget>[];
   List<String> list = <String>['Caesar', 'Playfair'];
@@ -184,15 +198,11 @@ class _MyPageState extends State<MyPage> {
                           builder: (_, constraints) => Container(
                               width: constraints.widthConstraints().maxWidth,
                               height: constraints.widthConstraints().maxHeight,
-                              child: buildList(
-                                  constraints.widthConstraints().maxWidth,
-                                  constraints.widthConstraints().maxHeight))),
-                      LayoutBuilder(
-                          builder: (_, constraints) => Container(
-                              width: constraints.widthConstraints().maxWidth,
-                              height: constraints.widthConstraints().maxHeight,
                               child: CustomPaint(
-                                painter: x,
+                                foregroundPainter: x,
+                                child: buildList(
+                                    constraints.widthConstraints().maxWidth,
+                                    constraints.widthConstraints().maxHeight),
                               )))
                     ])),
                 Expanded(
@@ -295,6 +305,8 @@ class _MyPageState extends State<MyPage> {
   Vpred() {
     setState(() {
       if (encrypt.length - 1 > encryptingletter) encryptingletter += 1;
+      x = new FaceOutlinePainter(
+          encryptingletter.toDouble(), encryptingletter.toDouble());
     });
   }
 
@@ -305,6 +317,8 @@ class _MyPageState extends State<MyPage> {
       } else {
         encryptingletter = 0;
       }
+      x = new FaceOutlinePainter(
+          encryptingletter.toDouble(), encryptingletter.toDouble());
     });
   }
 
