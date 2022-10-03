@@ -103,6 +103,7 @@ class _MyPageState extends State<MyPage> {
 
   String encrypt = '';
   String encrypted = '';
+  int encryptingletter = 0;
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
@@ -130,7 +131,12 @@ class _MyPageState extends State<MyPage> {
           Expanded(
               flex: 7,
               child: Column(children: [
-                Expanded(flex: 9, child: buildList()),
+                Expanded(
+                    flex: 9,
+                    child: Stack(children: [
+                      buildList(),
+                      TextButton(onPressed: () => {}, child: Text("ttttt"))
+                    ])),
                 Expanded(
                   flex: 1,
                   child: Row(
@@ -139,6 +145,7 @@ class _MyPageState extends State<MyPage> {
                     crossAxisAlignment: CrossAxisAlignment
                         .center, //Center Column contents horizontally,
                     children: [
+                      Encrypting(),
                       TextButton(onPressed: Vpred, child: Text("Vpred")),
                       TextButton(onPressed: Vzad, child: Text("Vzad"))
                     ],
@@ -164,6 +171,13 @@ class _MyPageState extends State<MyPage> {
         maxLines: null,
         onSaved: (value) => setState(() => encrypt = value!),
       );
+
+  Widget Encrypting() => Text((() {
+        if (encrypt.isNotEmpty) {
+          return "Šifruje se: " + encrypt[encryptingletter];
+        }
+        return "Chybí text k zašifrování";
+      })());
   Widget buildList() => Builder(
       builder: ((context) => GridView(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -219,7 +233,12 @@ class _MyPageState extends State<MyPage> {
     return x;
   }
 
-  Vpred() {}
+  Vpred() {
+    setState(() {
+      if (encrypt.length - 1 > encryptingletter) encryptingletter += 1;
+    });
+  }
+
   Vzad() {}
   Guess() {}
   ShowCaesar() {
