@@ -76,11 +76,57 @@ class MyPage extends StatefulWidget {
   State<MyPage> createState() => _MyPageState();
 }
 
+class FaceOutlinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Define a paint object
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.0
+      ..color = Colors.indigo;
+
+    // Left eye
+    // canvas.drawRRect(
+    //   RRect.fromRectAndRadius(
+    //       Rect.fromLTWH(20, 40, 100, 100), Radius.circular(20)),
+    //   paint,
+    // );
+    // Right eye
+    // canvas.drawOval(
+    //   Rect.fromLTWH(size.width - 120, 40, 100, 100),
+    //   paint,
+    // );
+    canvas.drawOval(
+      Rect.fromLTWH(
+          (size.width / 5 / 2) - 10, (size.height / 5 / 2) - 10, 20, 20),
+      paint,
+    );
+    // Mouth
+    // final mouth = Path();
+    // mouth.moveTo(size.width * 0.8, size.height * 0.6);
+    // mouth.arcToPoint(
+    //   Offset(size.width * 0.2, size.height * 0.6),
+    //   radius: Radius.circular(150),
+    // );
+    // mouth.arcToPoint(
+    //   Offset(size.width * 0.8, size.height * 0.6),
+    //   radius: Radius.circular(200),
+    //   clockwise: false,
+    // );
+    // canvas.drawPath(mouth, paint);
+  }
+
+  @override
+  bool shouldRepaint(FaceOutlinePainter oldDelegate) => false;
+}
+
 class _MyPageState extends State<MyPage> {
   final formKey = GlobalKey<FormState>();
   final monKey = GlobalKey<FormState>();
   var redraw = Object();
   late TextEditingController _c;
+
+  FaceOutlinePainter x = new FaceOutlinePainter();
 
   int row = 26;
 
@@ -134,8 +180,20 @@ class _MyPageState extends State<MyPage> {
                 Expanded(
                     flex: 9,
                     child: Stack(children: [
-                      buildList(),
-                      TextButton(onPressed: () => {}, child: Text("ttttt"))
+                      LayoutBuilder(
+                          builder: (_, constraints) => Container(
+                              width: constraints.widthConstraints().maxWidth,
+                              height: constraints.widthConstraints().maxHeight,
+                              child: buildList(
+                                  constraints.widthConstraints().maxWidth,
+                                  constraints.widthConstraints().maxHeight))),
+                      LayoutBuilder(
+                          builder: (_, constraints) => Container(
+                              width: constraints.widthConstraints().maxWidth,
+                              height: constraints.widthConstraints().maxHeight,
+                              child: CustomPaint(
+                                painter: x,
+                              )))
                     ])),
                 Expanded(
                   flex: 1,
@@ -178,12 +236,13 @@ class _MyPageState extends State<MyPage> {
         }
         return "Chybí text k zašifrování";
       })());
-  Widget buildList() => Builder(
+  Widget buildList(double widt, double hei) => Builder(
       builder: ((context) => GridView(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: row,
                 childAspectRatio: MediaQuery.of(context).size.width /
                     (MediaQuery.of(context).size.height)),
+            physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             children: wid,
             key: ValueKey<Object>(redraw),
@@ -239,7 +298,16 @@ class _MyPageState extends State<MyPage> {
     });
   }
 
-  Vzad() {}
+  Vzad() {
+    setState(() {
+      if (encryptingletter > 0) {
+        encryptingletter -= 1;
+      } else {
+        encryptingletter = 0;
+      }
+    });
+  }
+
   Guess() {}
   ShowCaesar() {
     wid = Alphabet();
