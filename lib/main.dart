@@ -6,7 +6,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     setWindowTitle('Happy Flappy');
-    setWindowMinSize(const Size(500, 300));
+    setWindowMinSize(const Size(500, 400));
     setWindowMaxSize(Size.infinite);
   }
   runApp(const MyApp());
@@ -76,13 +76,15 @@ class MyPage extends StatefulWidget {
   State<MyPage> createState() => _MyPageState();
 }
 
+class Letcircle {
+  int index;
+  Letcircle(this.index);
+}
+
 class FaceOutlinePainter extends CustomPainter {
-  late double x;
-  late double y;
-  FaceOutlinePainter(double x, double y) {
-    this.x = x;
-    this.y = y;
-  }
+  late List<Letcircle> x;
+  late int row;
+  FaceOutlinePainter(this.x, this.row);
   @override
   void paint(Canvas canvas, Size size) {
     // Define a paint object
@@ -102,18 +104,23 @@ class FaceOutlinePainter extends CustomPainter {
     //   Rect.fromLTWH(size.width - 120, 40, 100, 100),
     //   paint,
     // );
-
     // canvas.drawOval(
     //   Rect.fromLTWH(
     //       (size.width / 5 / 2) - 10, (size.height / 5 / 2) - 10, 20, 20),
     //   paint,
     // );
 
-    canvas.drawOval(
-      Rect.fromLTWH((size.width / 5 / 2) - 10 * x,
-          (size.height / 5 / 2) - 10 * y, 20, 20),
-      paint,
-    );
+    double by = (size.width / row);
+    double byy = (size.height / row);
+    for (Letcircle point in x) {
+      int column = (point.index % row);
+      int rowin = (point.index / row).floor();
+      canvas.drawOval(
+        Rect.fromLTWH(
+            (by * column) + by / 2 - 10, (byy * rowin) + byy / 2 - 10, 20, 20),
+        paint,
+      );
+    }
 
     // Mouth
     // final mouth = Path();
@@ -139,10 +146,11 @@ class _MyPageState extends State<MyPage> {
   final monKey = GlobalKey<FormState>();
   var redraw = Object();
   late TextEditingController _c;
-
   int row = 26;
 
-  FaceOutlinePainter x = FaceOutlinePainter(1, 1);
+  List<List<Letcircle>> anim = [];
+
+  List<Letcircle> show = [];
 
   List<Widget> wid = <Widget>[];
   List<String> list = <String>['Caesar', 'Playfair'];
@@ -163,6 +171,7 @@ class _MyPageState extends State<MyPage> {
 
   String encrypt = '';
   String encrypted = '';
+  String keyencrypt = '';
   int encryptingletter = 0;
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -182,9 +191,10 @@ class _MyPageState extends State<MyPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(flex: 4, child: buildEncrypt()),
-                        Expanded(flex: 4, child: buildEncrypted()),
-                        Expanded(flex: 2, child: buildSubmit()),
+                        Expanded(flex: 3, child: buildEncrypt()),
+                        Expanded(flex: 3, child: keyEncrypt()),
+                        Expanded(flex: 3, child: buildEncrypted()),
+                        Expanded(flex: 1, child: buildSubmit()),
                       ],
                     ))),
           ),
@@ -193,18 +203,15 @@ class _MyPageState extends State<MyPage> {
               child: Column(children: [
                 Expanded(
                     flex: 9,
-                    child: Stack(children: [
-                      LayoutBuilder(
-                          builder: (_, constraints) => Container(
-                              width: constraints.widthConstraints().maxWidth,
-                              height: constraints.widthConstraints().maxHeight,
-                              child: CustomPaint(
-                                foregroundPainter: x,
-                                child: buildList(
-                                    constraints.widthConstraints().maxWidth,
-                                    constraints.widthConstraints().maxHeight),
-                              )))
-                    ])),
+                    child: LayoutBuilder(
+                        builder: (_, constraints) => SizedBox(
+                            width: constraints.widthConstraints().maxWidth,
+                            height: constraints.widthConstraints().maxHeight,
+                            child: CustomPaint(
+                              foregroundPainter: FaceOutlinePainter(show, row),
+                              willChange: true,
+                              child: buildList(),
+                            )))),
                 Expanded(
                   flex: 1,
                   child: Row(
@@ -214,8 +221,8 @@ class _MyPageState extends State<MyPage> {
                         .center, //Center Column contents horizontally,
                     children: [
                       Encrypting(),
-                      TextButton(onPressed: Vpred, child: Text("Vpred")),
-                      TextButton(onPressed: Vzad, child: Text("Vzad"))
+                      TextButton(onPressed: Vpred, child: const Text("Vpred")),
+                      TextButton(onPressed: Vzad, child: const Text("Vzad"))
                     ],
                   ),
                 )
@@ -239,23 +246,40 @@ class _MyPageState extends State<MyPage> {
         maxLines: null,
         onSaved: (value) => setState(() => encrypt = value!),
       );
+  Widget keyEncrypt() => TextFormField(
+        decoration: const InputDecoration(
+          labelText: 'Klic k šifrování',
+        ),
+        validator: (value) {
+          if (value!.isEmpty) {
+            return 'Zadej klic k šifrování';
+          } else {
+            return null;
+          }
+        },
+        keyboardType: TextInputType.multiline,
+        minLines: 1,
+        maxLines: null,
+        onSaved: (value) => setState(() => keyencrypt = value!),
+      );
 
+  // ignore: non_constant_identifier_names
   Widget Encrypting() => Text((() {
         if (encrypt.isNotEmpty) {
-          return "Šifruje se: " + encrypt[encryptingletter];
+          return "Šifruje se: ${encrypt[encryptingletter]}";
         }
         return "Chybí text k zašifrování";
       })());
-  Widget buildList(double widt, double hei) => Builder(
+  Widget buildList() => Builder(
       builder: ((context) => GridView(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: row,
                 childAspectRatio: MediaQuery.of(context).size.width /
                     (MediaQuery.of(context).size.height)),
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            children: wid,
             key: ValueKey<Object>(redraw),
+            children: wid,
           )));
   // Widget buildEncrypted() => TextFormField(
   //       decoration: const InputDecoration(
@@ -276,40 +300,49 @@ class _MyPageState extends State<MyPage> {
         readOnly: true,
       );
 
+  // ignore: non_constant_identifier_names
   List<Widget> AlphabetPlayfair() {
     List<Widget> x = <Widget>[];
     for (int i = 0; i < 25; i++) {
-      x.add(new TextButton(
+      x.add(TextButton(
           onPressed: Guess(),
           style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.red)),
-          child: Center(child: Text("A"))));
+          child: const Center(child: Text("A"))));
     }
 
     return x;
   }
 
+  // ignore: non_constant_identifier_names
   List<Widget> Alphabet() {
     List<Widget> x = <Widget>[];
     for (int i = 0; i < 26; i++) {
-      x.add(new TextButton(
+      String letter = String.fromCharCode(65 + i);
+      x.add(TextButton(
           onPressed: Guess(),
           style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.red)),
-          child: Center(child: Text("A"))));
+          child: Center(child: Text(letter))));
     }
 
     return x;
   }
 
+  // ignore: non_constant_identifier_names
   Vpred() {
     setState(() {
-      if (encrypt.length - 1 > encryptingletter) encryptingletter += 1;
-      x = new FaceOutlinePainter(
-          encryptingletter.toDouble(), encryptingletter.toDouble());
+      if (encryptingletter == 0) {
+        encryptingletter += 1;
+      } else {
+        if (encrypt.length - 1 > encryptingletter) {
+          encryptingletter += 1;
+        }
+      }
     });
   }
 
+  // ignore: non_constant_identifier_names
   Vzad() {
     setState(() {
       if (encryptingletter > 0) {
@@ -317,25 +350,38 @@ class _MyPageState extends State<MyPage> {
       } else {
         encryptingletter = 0;
       }
-      x = new FaceOutlinePainter(
-          encryptingletter.toDouble(), encryptingletter.toDouble());
+      if (anim.isNotEmpty) {}
     });
   }
 
+  // ignore: non_constant_identifier_names
   Guess() {}
+  // ignore: non_constant_identifier_names
   ShowCaesar() {
     wid = Alphabet();
     row = 26;
+    // anim.add(Letcircle(encryptingletter));
+    int key = int.parse(keyencrypt);
+    encrypt = encrypt.toUpperCase();
+    String encryptedstring = '';
+    for (int i = 0; i < encrypt.length; i++) {
+      int charcode = encrypt.codeUnitAt(i);
+      if (!(charcode > 64 && charcode < 91)) continue;
+
+      int encryptedchar = (charcode + key - 65) % 26 + 65;
+      encryptedstring += String.fromCharCode(encryptedchar);
+    }
     setState(() {
-      wid = wid;
-      Refresh();
+      _c.text = encryptedstring;
     });
   }
 
+  // ignore: non_constant_identifier_names
   Refresh() {
     redraw = Object();
   }
 
+  // ignore: non_constant_identifier_names
   ShowPlayfair() {
     wid = AlphabetPlayfair();
     row = 5;
@@ -377,7 +423,6 @@ class _MyPageState extends State<MyPage> {
                   }
                   break;
               }
-              _c.text = encrypt;
             }
           },
           key: monKey,
