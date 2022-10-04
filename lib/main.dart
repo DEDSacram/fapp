@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:window_size/window_size.dart';
 
@@ -147,6 +148,8 @@ class _MyPageState extends State<MyPage> {
   var redraw = Object();
   late TextEditingController _c;
   int row = 26;
+  double _currentSliderValue = 500;
+  late Timer timer;
 
   List<List<List<Letcircle>>> anim = [];
 
@@ -226,8 +229,27 @@ class _MyPageState extends State<MyPage> {
                         .center, //Center Column contents horizontally,
                     children: [
                       Encrypting(),
+                      TextButton(
+                          onPressed: onClickAniForward,
+                          child: const Text("AutoVpred")),
                       TextButton(onPressed: Vpred, child: const Text("Vpred")),
-                      TextButton(onPressed: Vzad, child: const Text("Vzad"))
+                      TextButton(
+                          onPressed: onClickAniStop, child: const Text("Stop")),
+                      TextButton(onPressed: Vzad, child: const Text("Vzad")),
+                      TextButton(
+                          onPressed: onClickAniBackward,
+                          child: const Text("AutoVzad")),
+                      Slider(
+                        value: _currentSliderValue,
+                        max: 5000,
+                        divisions: 10,
+                        label: _currentSliderValue.round().toString(),
+                        onChanged: (double value) {
+                          setState(() {
+                            _currentSliderValue = value;
+                          });
+                        },
+                      )
                     ],
                   ),
                 )
@@ -334,8 +356,7 @@ class _MyPageState extends State<MyPage> {
     return x;
   }
 
-  // ignore: non_constant_identifier_names
-  Vpred() {
+  aniStepForward() {
     if (anim[animationletter].length - 1 > animationstep) {
       animationstep++;
     } else {
@@ -344,15 +365,13 @@ class _MyPageState extends State<MyPage> {
         animationstep = 0;
       }
     }
-    print(animationletter);
     setState(() {
       animationletter = animationletter;
       show = anim[animationletter][animationstep];
     });
   }
 
-  // ignore: non_constant_identifier_names
-  Vzad() {
+  aniStepBackward() {
     if (animationstep - 1 >= 0) {
       animationstep--;
     } else {
@@ -365,6 +384,38 @@ class _MyPageState extends State<MyPage> {
       animationletter = animationletter;
       show = anim[animationletter][animationstep];
     });
+  }
+
+  onClickAniForward() {
+    onClickAniStop();
+    timer = Timer.periodic(Duration(milliseconds: _currentSliderValue.round()),
+        (Timer t) => aniStepForward());
+  }
+
+  onClickAniBackward() {
+    onClickAniStop();
+    timer = Timer.periodic(Duration(milliseconds: _currentSliderValue.round()),
+        (Timer t) => aniStepBackward());
+  }
+
+  onClickAniStop() {
+    try {
+      timer.cancel();
+    } catch (e) {
+      //code
+    }
+  }
+
+  // ignore: non_constant_identifier_names
+  Vpred() {
+    onClickAniStop();
+    aniStepForward();
+  }
+
+  // ignore: non_constant_identifier_names
+  Vzad() {
+    onClickAniStop();
+    aniStepBackward();
   }
 
   // ignore: non_constant_identifier_names
