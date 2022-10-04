@@ -148,7 +148,7 @@ class _MyPageState extends State<MyPage> {
   late TextEditingController _c;
   int row = 26;
 
-  List<List<Letcircle>> anim = [];
+  List<List<List<Letcircle>>> anim = [];
 
   List<Letcircle> show = [];
 
@@ -336,7 +336,6 @@ class _MyPageState extends State<MyPage> {
 
   // ignore: non_constant_identifier_names
   Vpred() {
-    this.show = [];
     if (anim[animationletter].length - 1 > animationstep) {
       animationstep++;
     } else {
@@ -348,13 +347,12 @@ class _MyPageState extends State<MyPage> {
     print(animationletter);
     setState(() {
       animationletter = animationletter;
-      show.add(anim[animationletter][animationstep]);
+      show = anim[animationletter][animationstep];
     });
   }
 
   // ignore: non_constant_identifier_names
   Vzad() {
-    this.show = [];
     if (animationstep - 1 >= 0) {
       animationstep--;
     } else {
@@ -365,7 +363,7 @@ class _MyPageState extends State<MyPage> {
     }
     setState(() {
       animationletter = animationletter;
-      show.add(anim[animationletter][animationstep]);
+      show = anim[animationletter][animationstep];
     });
   }
 
@@ -379,14 +377,16 @@ class _MyPageState extends State<MyPage> {
     encrypt = encrypt.toUpperCase();
     String encryptedstring = '';
     for (int i = 0; i < encrypt.length; i++) {
-      List<Letcircle> steps = [];
+      List<List<Letcircle>> steps = [];
       int charcode = encrypt.codeUnitAt(i);
       if (!(charcode > 64 && charcode < 91)) continue;
       //animation
       int condition1 = (charcode + key - 65) % 26;
       int condition2 = (charcode - 65) % 26;
       while (condition1 != condition2) {
-        steps.add(Letcircle(condition2));
+        List<Letcircle> stepped = [];
+        stepped.add(Letcircle(condition2));
+        steps.add(stepped);
         if (condition2 == 26) {
           condition2 = 0;
         }
@@ -395,7 +395,9 @@ class _MyPageState extends State<MyPage> {
       int encryptedchar = (charcode + key - 65) % 26 + 65;
       encryptedstring += String.fromCharCode(encryptedchar);
       if (condition1 == condition2) {
-        steps.add(Letcircle(condition2));
+        List<Letcircle> stepped = [];
+        stepped.add(Letcircle(condition2));
+        steps.add(stepped);
       }
       anim.add(steps);
       print(anim);
