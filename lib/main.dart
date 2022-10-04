@@ -239,17 +239,18 @@ class _MyPageState extends State<MyPage> {
                       TextButton(
                           onPressed: onClickAniBackward,
                           child: const Text("AutoVzad")),
-                      Slider(
-                        value: _currentSliderValue,
-                        max: 5000,
-                        divisions: 10,
-                        label: _currentSliderValue.round().toString(),
-                        onChanged: (double value) {
-                          setState(() {
-                            _currentSliderValue = value;
-                          });
-                        },
-                      )
+                      if (timeractive())
+                        Slider(
+                          value: _currentSliderValue,
+                          max: 5000,
+                          divisions: 10,
+                          label: _currentSliderValue.round().toString(),
+                          onChanged: (double value) {
+                            setState(() {
+                              _currentSliderValue = value;
+                            });
+                          },
+                        )
                     ],
                   ),
                 )
@@ -341,6 +342,17 @@ class _MyPageState extends State<MyPage> {
     return x;
   }
 
+  bool timeractive() {
+    try {
+      if (timer.isActive) {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      return true;
+    }
+  }
+
   // ignore: non_constant_identifier_names
   List<Widget> Alphabet() {
     List<Widget> x = <Widget>[];
@@ -400,7 +412,9 @@ class _MyPageState extends State<MyPage> {
 
   onClickAniStop() {
     try {
-      timer.cancel();
+      setState(() {
+        timer.cancel();
+      });
     } catch (e) {
       //code
     }
